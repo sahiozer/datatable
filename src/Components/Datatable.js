@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, TextField,
 } from '@mui/material';
 
 const columns = [
@@ -55,6 +55,7 @@ const rows = [
 export default function DataTable() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [searchText, setSearchText] = React.useState('');
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -65,8 +66,27 @@ export default function DataTable() {
     setPage(0);
   };
 
+  const handleSearch = (event) => {
+    setSearchText(event.target.value);
+  };
+
+  const filteredRows = rows.filter((row) => {
+    return columns.some((column) => {
+      const value = row[column.id];
+      return value.toString().toLowerCase().includes(searchText.toLowerCase());
+    });
+  });
+
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <TextField
+        label="Search"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchText}
+        onChange={handleSearch}
+      />
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -83,7 +103,7 @@ export default function DataTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => {
                 return (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
@@ -104,7 +124,7 @@ export default function DataTable() {
       <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
-        count={rows.length}
+        count={filteredRows.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
